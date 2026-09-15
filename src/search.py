@@ -131,7 +131,7 @@ def greedy(problem: WeightedGrid, heuristic: Heuristic) -> SearchResult:
     start = problem.start
     goal = problem.goal
     counter = 0
-    h0 heuristic(start, goal)
+    h0 = heuristic(start, goal)
     frontier = [(h0, counter, start)]
     frontier_set = {start}
     explored = set()
