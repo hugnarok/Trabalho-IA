@@ -13,8 +13,8 @@ class SearchResult:
     cost: float = float("inf")
     generated: int = 0
     expanded: int = 0
-    peak_frontier = max(peak_frontier, len(frontier))
-    peak_stored = max(peak_stored, len(frontier_states | explored))
+    peak_frontier: int = 0
+    peak_stored: int = 0
 
     @property
     def steps(self) -> int:
