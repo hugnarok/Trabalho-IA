@@ -14,7 +14,7 @@ class SearchResult:
     generated: int = 0
     expanded: int = 0
     peak_frontier: int = 0
-    peak_stored: int = 0
+    peak_stored_states: int = 0
 
     @property
     def steps(self) -> int:

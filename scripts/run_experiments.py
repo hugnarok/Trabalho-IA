@@ -47,7 +47,7 @@ def main() -> None:
         print(
             f"{nome:<8} {heur:<12} {resultado.steps:6} {resultado.cost:8.1f} "
             f"{resultado.generated:5} {resultado.expanded:5} "
-            f"{resultado.peak_frontier:6} {resultado.peak_stored:6} {tempo:12.6f}"
+            f"{resultado.peak_frontier:6} {resultado.peak_stored_states:6} {tempo:12.6f}"
         )
 
 if __name__ == "__main__":
