@@ -16,12 +16,24 @@ Leia primeiro o arquivo **`EC_IA_Trabalho_01_2026.pdf`**. O enunciado prevalece 
 
 Preencha estes dados antes de cada submissão:
 
-- **Aluno(a) 1:** `<nome>`
-- **Aluno(a) 2:** `<nome ou não se aplica>`
-- **Repositório Git:** `<link do repositório>`
-- **Tag:** `entrega-parte1` ou `entrega-final`
+- **Aluno(a) 1:** Hugo Henrique Marques
+- **Aluno(a) 2:** João Pedro Silva Siqueira
+- **Repositório Git:** https://github.com/hugnarok/Trabalho-IA
+- **Tag:** entrega-parte1
 
+## Resultados preliminares da Parte 1
 
+Mapa `data/mapa_teste.txt`. Cada configuração foi executada 30 vezes. `Tempo_s` é a mediana, sem contar a leitura do arquivo.
+
+| Alg. | Heur. | Passos | Custo | Ger. | Exp. | Pico F. | Pico mem. | Tempo (s) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| BFS | — | 15 | 40 | 66 | 59 | 9 | 66 | 0.000101 |
+| DFS | — | 15 | 40 | 21 | 15 | 6 | 21 | 0.000027 |
+| UCS | — | 29 | 29 | 77 | 74 | 6 | 77 | 0.000152 |
+| Gulosa | Manhattan | 15 | 40 | 21 | 15 | 6 | 21 | 0.000029 |
+| A* | Manhattan | 29 | 29 | 60 | 43 | 15 | 58 | 0.000094 |
+| Gulosa | Euclidiana | 15 | 40 | 21 | 15 | 6 | 21 | 0.000028 |
+| A* | Euclidiana | 29 | 29 | 72 | 60 | 12 | 72 | 0.000134 |
 
 ## Entrega no SIGAA e repositório Git
 
