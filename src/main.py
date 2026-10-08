@@ -23,8 +23,19 @@ def _search_command(args: argparse.Namespace) -> None:
     else:
         result = astar(problem, heuristics[args.heuristic])
 
-    print(json.dumps(result.__dict__ | {"steps": result.steps}, ensure_ascii=False, indent=2))
+    print("\n")
+    print("--------------------------------")
+    print("Resultados:")
+    print("--------------------------------")
+    print(f"Algoritmo: {result.algorithm}")
+    print(f"Encontrou: {'sim' if result.found else 'não'}")
+    print(f"Passos: {result.steps} | Custo: {result.cost}")
+    print(f"Gerados: {result.generated} | Expandidos: {result.expanded}")
+    print(f"Pico da fronteira: {result.peak_frontier} | Pico de memória: {result.peak_stored}")
     if result.found:
+        coordenadas = " -> ".join(f"({linha},{coluna})" for linha, coluna in result.path)
+        print("Coordenadas:", coordenadas)
+        print("Ações:", " ".join(result.actions))
         print("\nCaminho:\n")
         print(problem.render_path(result.path))
 

@@ -3,6 +3,9 @@
 venv/
 env/
 
+# Guia local de execução
+EXECUCOES.md
+
 # Cache do Python
 __pycache__/
 *.py[cod]
