@@ -14,9 +14,10 @@ def initial_board(rng: Random) -> Board:
 def conflicts(board: Board) -> int:
     count = 0
     for c1 in range(N):
-        r1, r2 = board[c1], board[c2]
-        if r1 == r2 or abs(r1 - r2) == abs(c1 - c2):
-            count += 1
+        for c2 in range(c1 + 1, N):
+            r1, r2 = board[c1], board[c2]
+            if r1 == r2 or abs(r1 - r2) == abs(c1 - c2):
+                count += 1
     return count
 
 def moves(board: Board) -> Iterable[Move]:

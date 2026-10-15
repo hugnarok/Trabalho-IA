@@ -19,7 +19,21 @@ Preencha estes dados antes de cada submissão:
 - **Aluno(a) 1:** Hugo Henrique Marques
 - **Aluno(a) 2:** João Pedro Silva Siqueira
 - **Repositório Git:** https://github.com/hugnarok/Trabalho-IA
-- **Tag:** entrega-parte1
+- **Tag:** entrega-final
+
+## Como executar
+
+Precisa apenas do Python 3.10 ou mais novo. Não há dependências externas.
+
+```bash
+python3 -m unittest discover -s tests -v
+python3 scripts/run_experiments.py
+python3 -m src.main busca --map data/mapa_teste.txt --algorithm astar --heuristic manhattan
+python3 -m src.main rainhas --algorithm hill --seed 42
+python3 -m src.main rainhas --algorithm restart --seed 42 --max-restarts 50
+```
+
+O script `scripts/run_experiments.py` gera as tabelas das duas partes usadas no relatório.
 
 ## Resultados preliminares da Parte 1
 
@@ -34,6 +48,21 @@ Mapa `data/mapa_teste.txt`. Cada configuração foi executada 30 vezes. `Tempo_s
 | A* | Manhattan | 29 | 29 | 60 | 43 | 15 | 58 | 0.000094 |
 | Gulosa | Euclidiana | 15 | 40 | 21 | 15 | 6 | 21 | 0.000028 |
 | A* | Euclidiana | 29 | 29 | 72 | 60 | 12 | 72 | 0.000134 |
+
+## Resultados da Parte 2
+
+8 Rainhas, sementes de 0 a 99, Random Restart com limite de 50 reinícios.
+
+| Métrica | Hill Climbing | Random Restart |
+|---|---:|---:|
+| Taxa de sucesso | 12% | 100% |
+| Média de iterações | 3,28 | 24,72 |
+| Mediana de iterações | 3 | 17,5 |
+| Média de estados avaliados | 240,68 | 1826,64 |
+| Média de reinícios | — | 6,76 |
+| Máximo de reinícios | — | 42 |
+
+Exemplo de falha do Hill Climbing (semente 0): começa em `[6, 6, 0, 4, 7, 6, 4, 7]` com h = 9 e para em `[6, 3, 5, 2, 1, 6, 4, 7]` com h = 2, sem nenhum vizinho melhor.
 
 ## Entrega no SIGAA e repositório Git
 

@@ -20,55 +20,60 @@
 
 \title{Trabalho 01 - Busca Não Informada, Busca Informada e Busca Local}
 
-% Substitua pelos nomes da dupla. Se o trabalho for individual, remova o segundo nome.
-\author{Nome Completo do Aluno 1\inst{1}, Nome Completo do Aluno 2\inst{1}}
+\author{Hugo Henrique Marques\inst{1}, João Pedro Silva Siqueira\inst{1}}
 
 \address{Curso de Engenharia de Computação - CEFET-MG, campus Divinópolis\\
 Disciplina de Inteligência Artificial - 2026/2
-\email{email1@aluno.cefetmg.br, email2@aluno.cefetmg.br}}
+\email{hugohmarques4@gmail.com, joaopedrosilvasiqueira1@gmail.com}}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-This report presents the implementation and experimental analysis of uninformed, informed, and local search algorithms developed for Assignment 01. The experiments compare BFS, DFS, Uniform-Cost Search, Greedy Best-First Search, and A* in a weighted grid, and Hill Climbing and Random-Restart Hill Climbing in the 8-Queens problem. Replace this paragraph with a concise summary of the problem, methodology, main quantitative results, and conclusions. The abstract should not exceed approximately 10 lines.
+This report presents the implementation and comparison of search algorithms in two problems. In a weighted grid, we compare BFS, DFS, Uniform-Cost Search, Greedy Best-First Search and A*, using the Manhattan and Euclidean heuristics. In the 8-Queens problem, we compare Hill Climbing and Random-Restart Hill Climbing with seeds 0 to 99. On the public map, BFS, DFS and Greedy found a path with 15 actions and cost 40, while UCS and A* found the minimum cost of 29. A* with Manhattan expanded 43 states, against 74 for UCS. Hill Climbing solved only 12\% of the cases, while Random Restart solved all of them, with 6.76 restarts on average.
 \end{abstract}
 
 \begin{resumo}
-Este relatório apresenta a implementação e a análise experimental dos algoritmos de busca desenvolvidos no Trabalho 01. Os experimentos comparam BFS, DFS, Busca de Custo Uniforme, Busca Gulosa e A* em um ambiente ponderado, além de Hill Climbing e Random-Restart Hill Climbing no problema das 8 rainhas. Substitua este texto por um resumo objetivo contendo problema, metodologia, principais resultados quantitativos e conclusão. O resumo deve ter aproximadamente 10 linhas ou menos.
+Este relatório apresenta a implementação e a comparação de algoritmos de busca em dois problemas. Em um mapa ponderado, comparamos BFS, DFS, Busca de Custo Uniforme, Busca Gulosa e A*, com as heurísticas Manhattan e Euclidiana. No problema das 8 Rainhas, comparamos Hill Climbing e Random-Restart Hill Climbing com as sementes de 0 a 99. No mapa público, BFS, DFS e Gulosa encontraram um caminho com 15 ações e custo 40, enquanto UCS e A* encontraram o custo mínimo de 29. O A* com Manhattan expandiu 43 estados, contra 74 da UCS. O Hill Climbing resolveu apenas 12\% dos casos, e o Random Restart resolveu todos, com média de 6,76 reinícios.
 \end{resumo}
 
 \section{Introdução}
-Apresente brevemente os dois problemas tratados no trabalho e o objetivo da comparação experimental. Não transforme esta seção em uma revisão extensa dos algoritmos. O foco do relatório é a implementação realizada pelos autores e a interpretação dos resultados obtidos.
+O trabalho tem duas partes. Na Parte 1, um agente precisa sair de \texttt{S} e chegar em \texttt{G} em um mapa em grade com obstáculos e terrenos de custos diferentes. Para isso, usamos três buscas não informadas (BFS, DFS e UCS) e duas informadas (Gulosa e A*). Na Parte 2, usamos busca local (Hill Climbing e Random Restart) para posicionar 8 rainhas em um tabuleiro sem ataques. Os algoritmos seguem a definição de \cite{russell2021}.
 
-Ao final desta seção, indique de forma objetiva as perguntas que a análise pretende responder, como a relação entre número de passos e custo, o efeito das heurísticas e as limitações do Hill Climbing.
+A análise procura responder principalmente: (i) se o caminho com menos ações também é o mais barato; (ii) qual o efeito das heurísticas no número de estados expandidos; e (iii) por que o Hill Climbing falha e quanto os reinícios ajudam.
 
 \section{Representação e implementação}
 \subsection{Parte 1 - Busca não informada e informada}
-Descreva a representação do estado, as estruturas utilizadas para fronteira e estados visitados, o tratamento de custos e a reconstrução do caminho. Explique também como foram implementados os critérios de desempate exigidos no enunciado.
+O estado é a posição \texttt{(linha, coluna)} do agente. O mapa é lido de um arquivo texto, e as posições de \texttt{S} e \texttt{G} são encontradas na leitura, sem dimensões fixas. Os sucessores são gerados na ordem Norte, Leste, Sul e Oeste, ignorando bordas e obstáculos (\texttt{\#}). O custo de uma ação é o custo da célula de destino. Cada busca guarda um dicionário de predecessores e da ação usada, que serve para reconstruir o caminho no final, e um dicionário com o custo $g(n)$.
 
-Evite inserir grandes trechos de código. Quando necessário, use apenas pequenos fragmentos para explicar uma decisão de implementação relevante.
+A BFS usa uma fila (\texttt{deque}) e a DFS usa uma pilha (lista). Na DFS, os sucessores são empilhados em ordem inversa, para que o Norte seja o primeiro a sair da pilha. Nas duas, o estado é marcado como descoberto quando entra na fronteira, usando um conjunto da fronteira e um conjunto de explorados.
+
+UCS, Gulosa e A* usam fila de prioridade (\texttt{heapq}) com as tuplas $(g, \text{ordem})$, $(h, \text{ordem})$ e $(f, h, \text{ordem})$, onde \emph{ordem} é um contador de inserções usado no desempate. Na UCS e no A*, se aparece um caminho mais barato para um estado que ainda está na fronteira, o custo e o predecessor são atualizados e o estado é inserido de novo. A entrada antiga é descartada quando sai da fila e não conta como expansão.
+
+As métricas seguem o enunciado: \emph{gerados} conta todas as inserções na fronteira (incluindo o estado inicial e as reinserções); \emph{expandidos} conta os estados retirados para os quais os sucessores foram gerados (o objetivo não conta); o pico da fronteira é o maior número de estados distintos nela; e o pico de memória é o maior valor de $|\text{fronteira} \cup \text{explorados}|$.
 
 \subsection{Heurísticas}
-Informe como foram calculadas as distâncias Manhattan e Euclidiana e explique por que elas são adequadas ao modelo de movimento adotado. A discussão sobre admissibilidade deve aparecer posteriormente, com base nos resultados e nas propriedades do problema.
+As duas heurísticas usam a posição do estado e a do objetivo: $h_M(n) = |x_n - x_G| + |y_n - y_G|$ e $h_E(n) = \sqrt{(x_n - x_G)^2 + (y_n - y_G)^2}$. Como o agente só anda em quatro direções, a Manhattan é exatamente o número mínimo de movimentos até o objetivo quando não há obstáculos. A Euclidiana é a distância em linha reta e é sempre menor ou igual à Manhattan.
 
 \subsection{Problema das 8 rainhas}
-Descreva a representação de uma configuração, a função de avaliação $h(s)$, a definição da vizinhança e os critérios de parada do Hill Climbing. Explique também como os reinícios aleatórios foram realizados e como as sementes foram controladas.
+O tabuleiro é um vetor de 8 posições, em que o índice é a coluna e o valor é a linha da rainha. A função $h(s)$ conta os pares de rainhas que se atacam, isto é, que estão na mesma linha ou na mesma diagonal ($|l_1 - l_2| = |c_1 - c_2|$). Os vizinhos são gerados da coluna 0 até a 7 e, em cada coluna, da linha 0 até a 7, pulando a linha atual, o que dá 56 vizinhos.
+
+O Hill Climbing avalia os 56 vizinhos e escolhe o primeiro com o menor $h$. Ele só se move se esse $h$ for estritamente menor que o atual; caso contrário, para. Assim, quando chega em $h = 0$, ele também para, pois nenhum vizinho pode ser melhor. O Random Restart cria um único \texttt{random.Random(seed)} e usa esse mesmo objeto para gerar todos os estados iniciais, com uma chamada \texttt{randrange(8)} por coluna. Ele faz no máximo 51 tentativas (1 inicial + 50 reinícios) e soma as iterações e os estados avaliados de todas elas.
 
 \section{Metodologia experimental}
-Descreva o ambiente utilizado para os experimentos, a versão do Python e qualquer dependência relevante. Informe os mapas utilizados, as heurísticas avaliadas e a forma de obtenção das métricas.
+Os experimentos foram feitos em Linux com Python 3.12.3, usando apenas a biblioteca padrão. Na Parte 1, usamos o mapa público \texttt{data/mapa\_teste.txt} ($8 \times 16$) com as heurísticas Manhattan e Euclidiana na Gulosa e no A*. Cada configuração foi executada 30 vezes, e o tempo apresentado é a mediana medida com \texttt{time.perf\_counter}, sem contar a leitura do arquivo. O tempo varia um pouco entre execuções e é só uma métrica secundária.
 
-Para as 8 rainhas, indique explicitamente que foram executadas as sementes de 0 a 99 e que o Random-Restart Hill Climbing utilizou o limite estabelecido no enunciado.
+Na Parte 2, os dois métodos foram executados com as sementes de 0 a 99, e o Random Restart usou o limite de 50 reinícios.
 
-O relatório deve permitir que outra pessoa reproduza os resultados utilizando o repositório entregue. Informe neste parágrafo o endereço do repositório Git e a tag utilizada na entrega final.
+O script \texttt{scripts/run\_experiments.py} gera todas as tabelas deste relatório, e os testes automatizados ficam na pasta \texttt{tests}. Os testes cobrem os casos mínimos do enunciado (início ao lado do objetivo, mapa sem solução, mapa com ciclos, rotas com o mesmo número de ações e rota curta e cara contra rota longa e barata), além de testes da função de conflitos, da vizinhança, do Hill Climbing e do Random Restart.
 
-\noindent\textbf{Repositório:} \url{https://...} \\
+\noindent\textbf{Repositório:} \url{https://github.com/hugnarok/Trabalho-IA} \\
 \textbf{Tag da entrega final:} \texttt{entrega-final}.
 
 \section{Resultados}
 \subsection{Parte 1 - Busca não informada e informada}
-A Tabela~\ref{tab:grid} deve ser preenchida com os resultados obtidos no mapa público de teste. Se os autores realizarem experimentos adicionais, apresente-os apenas quando ajudarem a responder às questões do trabalho.
+A Tabela~\ref{tab:grid} mostra os resultados no mapa público.
 
 \begin{table}[H]
 \centering
@@ -79,21 +84,58 @@ A Tabela~\ref{tab:grid} deve ser preenchida com os resultados obtidos no mapa p�
 \toprule
 Algoritmo & Heurística & Passos & Custo & Gerados & Expandidos & Pico fronteira & Memória & Tempo (ms) \\
 \midrule
-BFS     & -          & - & - & - & - & - & - & - \\
-DFS     & -          & - & - & - & - & - & - & - \\
-UCS     & -          & - & - & - & - & - & - & - \\
-Gulosa  & Manhattan  & - & - & - & - & - & - & - \\
-Gulosa  & Euclidiana & - & - & - & - & - & - & - \\
-A*      & Manhattan  & - & - & - & - & - & - & - \\
-A*      & Euclidiana & - & - & - & - & - & - & - \\
+BFS     & -          & 15 & 40 & 66 & 59 & 9  & 66 & 0,073 \\
+DFS     & -          & 15 & 40 & 21 & 15 & 6  & 21 & 0,022 \\
+UCS     & -          & 29 & 29 & 77 & 74 & 6  & 77 & 0,106 \\
+Gulosa  & Manhattan  & 15 & 40 & 21 & 15 & 6  & 21 & 0,023 \\
+Gulosa  & Euclidiana & 15 & 40 & 21 & 15 & 6  & 21 & 0,027 \\
+A*      & Manhattan  & 29 & 29 & 60 & 43 & 15 & 58 & 0,080 \\
+A*      & Euclidiana & 29 & 29 & 72 & 60 & 12 & 72 & 0,100 \\
 \bottomrule
 \end{tabular}}
 \end{table}
 
-Inclua pelo menos uma representação visual dos caminhos encontrada pelos algoritmos quando ela contribuir para a discussão. Não é necessário inserir uma figura para cada execução se isso apenas repetir informação.
+A Figura~\ref{fig:caminhos} mostra os dois caminhos encontrados. BFS, DFS e Gulosa seguem em linha reta pela primeira linha e passam pelas 5 células \texttt{M}. UCS e A* com Manhattan dão a volta pela parte de baixo do mapa, passando só por células de custo 1.
 
-\subsection{Parte 2 - Busca local e 8 rainhas}
-A Tabela~\ref{tab:queens} resume os experimentos obrigatórios com as sementes de 0 a 99.
+\begin{figure}[H]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\small
+\begin{verbatim}
+S**************G
+.#.#####.####...
+.#.....#....#...
+.#####.#.##.#...
+.....#.#....#...
+####.#.######...
+.....#...R.R....
+................
+\end{verbatim}
+(a) BFS, DFS e Gulosa: custo 40
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\small
+\begin{verbatim}
+S**MMMMM.....**G
+.#*#####.####*..
+.#*****#....#*..
+.#####*#.##.#*..
+.....#*#....#*..
+####.#*######*..
+.....#***R.R**..
+........*****...
+\end{verbatim}
+(b) UCS e A* Manhattan: custo 29
+\end{minipage}
+\caption{Caminhos no mapa público. \texttt{S} é o início, \texttt{G} é o objetivo e \texttt{*} marca o percurso.}
+\label{fig:caminhos}
+\end{figure}
+
+\subsection{Parte 2 - Busca local e 8 rainhas}\label{sec:queens}
+A Tabela~\ref{tab:queens} resume os experimentos com as sementes de 0 a 99.
 
 \begin{table}[H]
 \centering
@@ -104,53 +146,78 @@ A Tabela~\ref{tab:queens} resume os experimentos obrigatórios com as sementes d
 Métrica & Hill Climbing & Random Restart \\
 \midrule
 Execuções & 100 & 100 \\
-Soluções encontradas & - & - \\
-Taxa de sucesso (\%) & - & - \\
-Média de iterações & - & - \\
-Mediana de iterações & - & - \\
-Média de estados avaliados & - & - \\
-Média de reinícios & N/A & - \\
-Máximo de reinícios & N/A & - \\
+Soluções encontradas & 12 & 100 \\
+Taxa de sucesso (\%) & 12 & 100 \\
+Média de iterações & 3,28 & 24,72 \\
+Mediana de iterações & 3 & 17,5 \\
+Média de estados avaliados & 240,68 & 1826,64 \\
+Média de reinícios & N/A & 6,76 \\
+Máximo de reinícios & N/A & 42 \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Apresente ainda pelo menos um caso de falha do Hill Climbing. Informe a semente, o estado inicial, o estado final, os valores inicial e final de $h(s)$ e explique por que nenhum movimento permitido produziu melhora.
+\textbf{Caso de falha do Hill Climbing (semente 0).} O estado inicial foi \texttt{[6, 6, 0, 4, 7, 6, 4, 7]}, com $h = 9$. O algoritmo fez 4 iterações ($h$: 9, 6, 4, 3, 2), avaliou 281 estados e parou em \texttt{[6, 3, 5, 2, 1, 6, 4, 7]}, com $h = 2$. Os dois conflitos que sobraram são entre as colunas 0 e 5 (mesma linha) e entre as colunas 3 e 4 (diagonal). Entre os 56 vizinhos desse estado, o menor valor de $h$ é 2, e 3 vizinhos têm esse valor. Como nenhum vizinho tem $h$ menor que 2, não existe melhora estrita, e o algoritmo para sem solução.
 
 \section{Discussão}
-Esta é a seção central do relatório. Não se limite a repetir os números das tabelas. Explique os resultados à luz das propriedades dos algoritmos e responda explicitamente às questões do enunciado.
+\begin{enumerate}
+\item \textbf{BFS encontrou o menor número de ações? Foi o de menor custo?} Sim, a BFS encontrou 15 ações, que é o mínimo possível, pois \texttt{G} está 15 colunas à direita de \texttt{S}. Mas esse caminho não foi o mais barato: ele passa pelas 5 células \texttt{M} (custo 6 cada) e custa 40, contra 29 da UCS e do A*.
 
-A discussão deve contemplar, pelo menos:
-\begin{itemize}
-    \item diferença entre menor número de ações e menor custo;
-    \item comportamento de BFS, DFS e UCS no mapa ponderado;
-    \item desempenho e limitações da Busca Gulosa;
-    \item comparação entre UCS e A* em custo e número de expansões;
-    \item efeito das heurísticas Manhattan e Euclidiana;
-    \item admissibilidade das heurísticas;
-    \item diferença conceitual entre Busca Gulosa e Hill Climbing;
-    \item motivo das falhas do Hill Climbing e efeito do Random Restart;
-    \item completude e optimalidade das estratégias de busca nas condições adotadas no trabalho.
-\end{itemize}
+\item \textbf{Por que BFS e UCS podem dar soluções diferentes?} A BFS expande por níveis, ou seja, só olha o número de ações e trata todos os passos como iguais. A UCS expande pelo menor custo acumulado $g(n)$. Quando os custos variam, o caminho com menos ações pode ser caro. No mapa, a UCS preferiu dar a volta (29 ações) para evitar as células \texttt{M}.
 
-Sempre que possível, associe uma afirmação a um resultado quantitativo obtido pelos autores.
+\item \textbf{Como a ordem de sucessores influencia a DFS?} A DFS sempre segue o primeiro sucessor disponível até não poder mais. Como \texttt{S} está no canto superior esquerdo, o Norte não existe e o Leste é o primeiro. Por isso a DFS foi direto pela primeira linha até \texttt{G}, com apenas 15 expansões, e achou o mesmo caminho da BFS. Isso aconteceu por causa da ordem, e não por alguma garantia: com o Sul antes do Leste, a DFS desceria pelo mapa e retornaria um caminho diferente.
+
+\item \textbf{Por que a Gulosa expande poucos estados e ainda dá custo alto?} A Gulosa olha só para $h(n)$ e ignora o custo já gasto. Na primeira linha, cada passo para o Leste diminui a distância até \texttt{G}, então ela foi em linha reta, com 15 expansões (o menor número de todos). Mas ela atravessou as células \texttt{M} sem levar o custo em conta, e o resultado custou 40, cerca de 38\% acima do ótimo.
+
+\item \textbf{A* e UCS deram o mesmo custo? E as expansões?} Sim, ambos encontraram custo 29. Mas a UCS expandiu 74 estados, enquanto o A* com Manhattan expandiu 43 (42\% menos) e o A* com Euclidiana expandiu 60. A heurística puxa a busca na direção do objetivo, enquanto a UCS expande em todas as direções pela ordem de custo. Em troca, o pico da fronteira do A* com Manhattan foi maior (15 contra 6).
+
+\item \textbf{Efeito de trocar Manhattan por Euclidiana.} Na Gulosa, não mudou nada: com as duas heurísticas, andar para o Leste na primeira linha é sempre o que mais diminui $h$, então o caminho e as métricas foram iguais. No A*, o custo continuou 29, mas as expansões subiram de 43 para 60. Como $h_E(n) \le h_M(n)$, a Euclidiana é menos informada, e o A* precisa olhar mais estados antes de confirmar o caminho ótimo.
+
+\item \textbf{As heurísticas são admissíveis?} Sim. Com movimentos só em quatro direções, são necessárias pelo menos $|x_n - x_G| + |y_n - y_G|$ ações para chegar ao objetivo. Como o menor custo de passo é 1 (células \texttt{.} e \texttt{G}), o custo real é sempre maior ou igual a $h_M(n)$. E como $h_E(n) \le h_M(n)$, a Euclidiana também nunca superestima. As duas também são consistentes, pois um passo muda a heurística em no máximo 1 e custa pelo menos 1. Isso explica por que o A* achou o custo ótimo com as duas.
+
+\item \textbf{Por que Hill Climbing e Gulosa não são equivalentes?} A Gulosa procura um caminho e guarda uma fronteira com vários estados e um conjunto de explorados. Se um ramo não leva ao objetivo, ela volta e expande outro estado da fronteira. O Hill Climbing guarda só o estado atual, olha apenas os vizinhos imediatos e só aceita melhora estrita. Ele não volta atrás; quando nenhum vizinho é melhor, ele para, mesmo sem solução. Por isso a Gulosa é completa no mapa finito, e o Hill Climbing resolveu só 12\% dos casos.
+
+\item \textbf{Uma falha do Hill Climbing.} Na semente 0, o algoritmo parou com $h = 2$ (Seção~\ref{sec:queens}). Nenhum dos 56 vizinhos tem $h$ menor que 2, então o estado é um mínimo local. Além disso, 3 vizinhos têm o mesmo $h = 2$, ou seja, o estado está em um platô: existiriam movimentos laterais, mas a versão obrigatória não os permite. A subida foi rápida (4 iterações) e parou perto de uma solução, o que foi comum nos experimentos (média de 3,28 iterações).
+
+\item \textbf{Por que os reinícios ajudam, mas não resolvem as limitações?} Cada reinício começa de um ponto aleatório novo. Se uma tentativa resolve cerca de 12\% dos casos, a chance de falhar nas 51 tentativas é de aproximadamente $0{,}88^{51} \approx 0{,}15\%$. Nos experimentos, o Random Restart resolveu as 100 sementes, com média de 6,76 reinícios (perto do valor esperado $0{,}88/0{,}12 \approx 7{,}3$) e máximo de 42. Mas cada tentativa continua sendo um Hill Climbing comum, que para em mínimos locais e platôs; o reinício só troca o ponto de partida. Com um limite de reinícios, não há garantia de sucesso, e o custo aumenta: foram 1826,64 estados avaliados em média, cerca de 7,6 vezes mais que o Hill Climbing.
+
+\item \textbf{Completude e optimalidade.} Neste trabalho o mapa é finito, os custos são positivos (no mínimo 1) e todas as buscas controlam estados repetidos. A Tabela~\ref{tab:prop} resume a comparação com os resultados obtidos.
+
+\begin{table}[H]
+\centering
+\caption{Propriedades teóricas e resultado observado no mapa público.}
+\label{tab:prop}
+\begin{tabular}{lccc}
+\toprule
+Algoritmo & Completo & Ótimo em custo & Custo obtido \\
+\midrule
+BFS    & Sim & Não (ótimo em número de ações) & 40 \\
+DFS    & Sim (mapa finito) & Não & 40 \\
+UCS    & Sim & Sim & 29 \\
+Gulosa & Sim (mapa finito) & Não & 40 \\
+A*     & Sim & Sim (heurística admissível) & 29 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Os resultados batem com a teoria: só UCS e A* garantem o menor custo e foram os únicos a achar 29. BFS, DFS e Gulosa acharam o caminho mais curto em ações, mas mais caro. O Hill Climbing, por outro lado, não é completo, como mostram os 12\% de sucesso.
+\end{enumerate}
 
 \section{Conclusão}
-Sintetize os principais achados do trabalho. Indique quais estratégias foram mais adequadas em cada cenário e quais limitações foram observadas. Não introduza resultados novos nesta seção.
+No mapa ponderado, o menor número de ações não foi o menor custo: BFS, DFS e Gulosa chegaram com custo 40, e só UCS e A* chegaram ao custo ótimo de 29. O A* com Manhattan foi a melhor opção, pois achou o ótimo com 43 expansões, contra 74 da UCS. A Euclidiana também levou ao ótimo, mas com mais expansões. Nas 8 Rainhas, o Hill Climbing é rápido, mas resolveu só 12\% dos casos por parar em mínimos locais e platôs. Os reinícios aleatórios levaram o sucesso a 100\% nas sementes testadas, ao custo de cerca de 7,6 vezes mais estados avaliados.
 
 \section*{Contribuições dos autores}
-Em trabalhos em dupla, descreva objetivamente a contribuição de cada integrante na implementação, experimentos, testes, análise e redação. Em trabalho individual, informe que todas as etapas foram realizadas pelo autor.
+\textbf{Hugo Henrique Marques:} estrutura inicial do projeto, heurísticas, função de reconstrução do caminho, BFS, DFS e Busca Gulosa, primeira versão do Hill Climbing e do Random Restart, testes mínimos e script de experimentos da Parte 1, README da Parte 1 e saídas do terminal.
+
+\noindent\textbf{João Pedro Silva Siqueira:} UCS e A*, correção das métricas em caso de falha e do desempenho das buscas, restauração do mapa público, correção da função de conflitos das 8 Rainhas, testes e experimentos da Parte 2, README final e relatório.
 
 \section*{Declaração de uso de IA}
-O detalhamento do uso de ferramentas de Inteligência Artificial deve constar no arquivo \texttt{IA\_USAGE.md} entregue com o repositório. Nesta seção, escreva apenas uma síntese, por exemplo: ``Foram utilizadas ferramentas de IA para revisão textual e esclarecimento de mensagens de erro, conforme detalhado no arquivo IA\_USAGE.md''. Caso nenhuma ferramenta tenha sido utilizada, declare isso explicitamente.
+
 
 \begin{thebibliography}{99}
 
-\bibitem[Stuart and Norvig 2021]{russell2021}
+\bibitem[Russell and Norvig 2021]{russell2021}
 Russell, S. and Norvig, P. (2021). \textit{Artificial Intelligence: A Modern Approach}. Pearson, 4th edition.
-
-% Adicione aqui outras referências realmente consultadas. Todo material externo usado
-% na fundamentação, implementação ou discussão deve ser citado.
 
 \end{thebibliography}
 

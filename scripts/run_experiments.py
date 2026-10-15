@@ -1,13 +1,16 @@
 import sys
 import time 
 from pathlib import Path
-from statistics import median
+from random import Random
+from statistics import mean, median
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from src.eight_queens import conflicts, initial_board, moves, apply_move, render
 from src.heuristics import manhattan, euclidean
+from src.hill_climbing import hill_climbing, random_restart
 from src.problem import WeightedGrid
 from src.search import astar, bfs, dfs, greedy, uniform_cost
 
@@ -49,6 +52,38 @@ def main() -> None:
             f"{resultado.generated:5} {resultado.expanded:5} "
             f"{resultado.peak_frontier:6} {resultado.peak_stored_states:6} {tempo:12.6f}"
         )
+
+    rainhas()
+
+def rainhas() -> None:
+    print("\nParte 2: 8 Rainhas com Hill Climbing e Random Restart (sementes 0 a 99).")
+    hill = [hill_climbing(initial_board(Random(s))) for s in range(100)]
+    restart = [random_restart(Random(s), max_restarts=50) for s in range(100)]
+
+    print(f"{'Metrica':<28} {'Hill':>10} {'Restart':>10}")
+    for nome, valor in [
+        ("Execucoes", len),
+        ("Solucoes encontradas", lambda r: sum(x.success for x in r)),
+        ("Taxa de sucesso (%)", lambda r: 100 * sum(x.success for x in r) / len(r)),
+        ("Media de iteracoes", lambda r: mean(x.iterations for x in r)),
+        ("Mediana de iteracoes", lambda r: median(x.iterations for x in r)),
+        ("Media de estados avaliados", lambda r: mean(x.evaluated_states for x in r)),
+        ("Media de reinicios", lambda r: mean(x.restarts for x in r)),
+        ("Maximo de reinicios", lambda r: max(x.restarts for x in r)),
+    ]:
+        print(f"{nome:<28} {valor(hill):>10.2f} {valor(restart):>10.2f}")
+
+    falhas = [s for s in range(100) if not hill[s].success]
+    semente = falhas[0]
+    falha = hill[semente]
+    vizinhos = [conflicts(apply_move(falha.final, m)) for m in moves(falha.final)]
+    print(f"\nPrimeira falha do Hill Climbing: semente {semente}")
+    print(f"Estado inicial: {falha.initial} | h = {falha.initial_conflicts}")
+    print(f"Estado final:   {falha.final} | h = {falha.final_conflicts}")
+    print(f"Valores de h no caminho: {falha.history}")
+    print(f"Menor h entre os 56 vizinhos do estado final: {min(vizinhos)} "
+          f"({vizinhos.count(min(vizinhos))} vizinhos com esse valor)")
+    print(render(falha.final))
 
 if __name__ == "__main__":
     main()
