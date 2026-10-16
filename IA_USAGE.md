@@ -5,7 +5,7 @@ Preencha esta seção para toda ferramenta de IA generativa utilizada durante o 
 | Ferramenta | Finalidade | Arquivos/partes afetadas | Como o resultado foi verificado |
 |---|---|---|---|
 | Cursor | Auxílio na organização dos testes mínimos, na correção do script de experimentos e na inclusão da tabela preliminar no README | `tests/test_problem.py`, `scripts/run_experiments.py`, `README.md` | Execução de `python3.12 -m unittest discover -s tests -v` e de `python3.12 scripts/run_experiments.py`; conferência manual dos caminhos, custos e métricas pela equipe |
-
+| Claude Code | Correção de alguns erros pontuais, identificação de erros ortográficos e auxílio na revisão | `modelo_relatorio/relatorio_sbc.tex`, `README.md` | Leitura e revisão manual do texto pela dupla |
 
 ## Declaração
 
